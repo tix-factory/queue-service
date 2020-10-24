@@ -17,6 +17,8 @@ namespace TixFactory.Queue
 		public IOperation<AddQueueItemRequest, AddQueueItemResult> AddQueueItemOperation { get; }
 		public IOperation<string, int> ClearQueueOperation { get; }
 		public IOperation<LeaseQueueItemRequest, QueueItemResult> LeaseQueueItemOperation { get; }
+		public IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> ReleaseQueueItemOperation { get; }
+		public IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> RemoveQueueItemOperation { get; }
 
 		public QueueOperations(ILogger logger, ISettings settings)
 		{
@@ -34,6 +36,8 @@ namespace TixFactory.Queue
 			AddQueueItemOperation = new AddQueueItemOperation(queueItemEntityFactory);
 			ClearQueueOperation = new ClearQueueOperation(queueItemEntityFactory);
 			LeaseQueueItemOperation = new LeaseQueueItemOperation(queueItemEntityFactory, logger);
+			ReleaseQueueItemOperation = new ReleaseQueueItemOperation(queueItemEntityFactory);
+			RemoveQueueItemOperation = new RemoveQueueItemOperation(queueItemEntityFactory);
 		}
 
 		private MySqlConnection BuildConnection()

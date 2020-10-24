@@ -9,5 +9,9 @@ namespace TixFactory.Queue
 		IOperation<string, int> ClearQueueOperation { get; }
 
 		IOperation<LeaseQueueItemRequest, QueueItemResult> LeaseQueueItemOperation { get; }
+
+		IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> ReleaseQueueItemOperation { get; }
+
+		IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> RemoveQueueItemOperation { get; }
 	}
 }
