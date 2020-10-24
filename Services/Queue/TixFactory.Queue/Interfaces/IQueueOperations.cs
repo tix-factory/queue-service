@@ -7,5 +7,7 @@ namespace TixFactory.Queue
 		IOperation<AddQueueItemRequest, AddQueueItemResult> AddQueueItemOperation { get; }
 
 		IOperation<string, int> ClearQueueOperation { get; }
+
+		IOperation<LeaseQueueItemRequest, QueueItemResult> LeaseQueueItemOperation { get; }
 	}
 }

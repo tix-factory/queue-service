@@ -27,5 +27,11 @@ namespace TixFactory.Queue.Service.Controllers
 		{
 			return _OperationExecuter.Execute(_QueueOperations.ClearQueueOperation, request.Data);
 		}
+
+		[HttpPost]
+		public IActionResult LeaseQueueItem([FromBody] LeaseQueueItemRequest request)
+		{
+			return _OperationExecuter.Execute(_QueueOperations.LeaseQueueItemOperation, request);
+		}
 	}
 }
