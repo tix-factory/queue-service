@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  queue-service:
+    image: tixfactory/queue-service:latest
+    container_name: queue-service
+    environment:
+      ApplicationApiKey: "" # ME: Put the TixFactory.Queue.Service ApiKey here!
+    networks:
+      tix-factory:
+        aliases:
+          - tix-factory-queue-service
+    ports:
+      - "80:80"
+    restart: always
+networks:
+  tix-factory:
+    name: tix-factory
