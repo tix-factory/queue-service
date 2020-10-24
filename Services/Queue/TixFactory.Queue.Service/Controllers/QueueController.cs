@@ -45,5 +45,11 @@ namespace TixFactory.Queue.Service.Controllers
 		{
 			return _OperationExecuter.Execute(_QueueOperations.RemoveQueueItemOperation, request);
 		}
+
+		[HttpPost]
+		public IActionResult GetQueueSize([FromBody] RequestPayload<string> request)
+		{
+			return _OperationExecuter.Execute(_QueueOperations.GetQueueSizeOperation, request.Data);
+		}
 	}
 }

@@ -19,6 +19,7 @@ namespace TixFactory.Queue
 		public IOperation<LeaseQueueItemRequest, QueueItemResult> LeaseQueueItemOperation { get; }
 		public IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> ReleaseQueueItemOperation { get; }
 		public IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> RemoveQueueItemOperation { get; }
+		public IOperation<string, long> GetQueueSizeOperation { get; }
 
 		public QueueOperations(ILogger logger, ISettings settings)
 		{
@@ -38,6 +39,7 @@ namespace TixFactory.Queue
 			LeaseQueueItemOperation = new LeaseQueueItemOperation(queueItemEntityFactory, logger);
 			ReleaseQueueItemOperation = new ReleaseQueueItemOperation(queueItemEntityFactory);
 			RemoveQueueItemOperation = new RemoveQueueItemOperation(queueItemEntityFactory);
+			GetQueueSizeOperation = new GetQueueSizeOperation(queueItemEntityFactory);
 		}
 
 		private MySqlConnection BuildConnection()
