@@ -4,7 +4,7 @@ using TixFactory.Http.Service;
 
 namespace TixFactory.Queue.Service.Controllers
 {
-	[Microsoft.AspNetCore.Components.Route("v1/[action]")]
+	[Route("v1/[action]")]
 	public class QueueController : Controller
 	{
 		private readonly IQueueOperations _QueueOperations;
