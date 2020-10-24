@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 using TixFactory.Collections;
 using TixFactory.Configuration;
 
-namespace TixFactory.Queue.Entities.Queues
+namespace TixFactory.Queue.Entities
 {
 	internal class QueueEntityFactory : IQueueEntityFactory
 	{

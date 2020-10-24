@@ -3,7 +3,7 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using TixFactory.Configuration;
 using TixFactory.Logging;
-using TixFactory.Queue.Entities.Queues;
+using TixFactory.Queue.Entities;
 using ISettings = TixFactory.Queue.Service.ISettings;
 
 namespace TixFactory.Queue
@@ -24,6 +24,7 @@ namespace TixFactory.Queue
 			var mySqlConnection = _MySqlConnection = new LazyWithRetry<MySqlConnection>(BuildConnection);
 			var databaseConnection = new DatabaseConnection(mySqlConnection);
 			var queueEntityFactory = new QueueEntityFactory(databaseConnection);
+			var queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
 		}
 
 		private MySqlConnection BuildConnection()
