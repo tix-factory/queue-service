@@ -18,7 +18,7 @@ namespace TixFactory.Queue
 
 		public (QueueItemResult output, OperationError error) Execute(LeaseQueueItemRequest request)
 		{
-			var queueItem = _QueueItemEntityFactory.LeaseQueueItem(request.QueueName, request.LeaseExpiry);
+			var queueItem = _QueueItemEntityFactory.LeaseQueueItem(request.QueueName, TimeSpan.Parse(request.LeaseExpiry));
 			if (queueItem == null)
 			{
 				return (null, null);

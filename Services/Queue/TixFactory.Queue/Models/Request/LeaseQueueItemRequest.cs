@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace TixFactory.Queue
 {
@@ -10,6 +9,6 @@ namespace TixFactory.Queue
 		public string QueueName { get; set; }
 
 		[DataMember(Name = "leaseExpiry")]
-		public TimeSpan LeaseExpiry { get; set; }
+		public string LeaseExpiry { get; set; }
 	}
 }
