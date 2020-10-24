@@ -1,0 +1,14 @@
+USE `queue`;
+
+CREATE TABLE IF NOT EXISTS `queue-items` (
+	`ID` BIGINT NOT NULL AUTO_INCREMENT,
+	`QueueID` BIGINT NOT NULL,
+	`Data` TEXT NOT NULL,
+	`HolderID` VARCHAR(36) NOT NULL,
+	`LockExpiration` DATETIME NOT NULL,
+	`Updated` DATETIME NOT NULL,
+	`Created` DATETIME NOT NULL,
+
+	PRIMARY KEY (`ID`),
+	FOREIGN KEY `FK_QueueItems_Queues_QueueID` (`QueueID`) REFERENCES `queues`(`ID`) ON DELETE CASCADE
+);
