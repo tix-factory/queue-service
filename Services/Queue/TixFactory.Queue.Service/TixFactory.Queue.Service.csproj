@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TixFactoryVersion>2.0.109</TixFactoryVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TixFactory.ApplicationAuthorization" Version="$(TixFactoryVersion)" />
+    <PackageReference Include="TixFactory.Configuration.Client" Version="$(TixFactoryVersion)" />
+    <PackageReference Include="TixFactory.Http.Service" Version="$(TixFactoryVersion)" />
+    <PackageReference Include="TixFactory.Logging.Client" Version="$(TixFactoryVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TixFactory.Queue\TixFactory.Queue.csproj" />
+  </ItemGroup>
+</Project>
