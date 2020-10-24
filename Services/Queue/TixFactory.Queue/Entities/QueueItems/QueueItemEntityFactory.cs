@@ -8,6 +8,7 @@ namespace TixFactory.Queue.Entities
 	{
 		private const string _InsertQueueItemStoredProcedureName = "InsertQueueItem";
 		private const string _GetQueueSizeStoredProcedureName = "GetQueueSize";
+		private const string _GetHeldQueueSizeStoredProcedureName = "GetHeldQueueSize";
 		private const string _ReleaseQueueItemStoredProcedureName = "ReleaseQueueItem";
 		private const string _LeaseQueueItemStoredProcedureName = "LeaseQueueItem";
 		private const string _ClearQueueStoredProcedureName = "ClearQueue";
@@ -68,6 +69,28 @@ namespace TixFactory.Queue.Entities
 			}
 
 			var countResults = _DatabaseConnection.ExecuteReadStoredProcedure<CountResult>(_GetQueueSizeStoredProcedureName, new[]
+			{
+				new MySqlParameter("@_QueueID", queue.Id)
+			});
+
+			var count = countResults.FirstOrDefault();
+			if (count == null)
+			{
+				return 0;
+			}
+
+			return count.Count;
+		}
+
+		public long GetHeldQueueSize(string queueName)
+		{
+			var queue = _QueueEntityFactory.GetQueueByName(queueName);
+			if (queue == null)
+			{
+				return 0;
+			}
+
+			var countResults = _DatabaseConnection.ExecuteReadStoredProcedure<CountResult>(_GetHeldQueueSizeStoredProcedureName, new[]
 			{
 				new MySqlParameter("@_QueueID", queue.Id)
 			});
