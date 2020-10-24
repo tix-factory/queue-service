@@ -10,6 +10,8 @@ namespace TixFactory.Queue.Entities
 
 		long GetQueueSize(string queueName);
 
+		long GetHeldQueueSize(string queueName);
+
 		int ClearQueue(string queueName);
 
 		bool ReleaseQueueItem(long id, Guid holderId);

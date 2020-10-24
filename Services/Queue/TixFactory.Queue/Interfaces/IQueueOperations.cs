@@ -15,5 +15,7 @@ namespace TixFactory.Queue
 		IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> RemoveQueueItemOperation { get; }
 
 		IOperation<string, long> GetQueueSizeOperation { get; }
+
+		IOperation<string, long> GetHeldQueueSizeOperation { get; }
 	}
 }
