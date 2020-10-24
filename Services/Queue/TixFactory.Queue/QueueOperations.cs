@@ -3,6 +3,8 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using TixFactory.Configuration;
 using TixFactory.Logging;
+using TixFactory.Operations;
+using TixFactory.Queue.Entities;
 using ISettings = TixFactory.Queue.Service.ISettings;
 
 namespace TixFactory.Queue
@@ -11,6 +13,13 @@ namespace TixFactory.Queue
 	{
 		private readonly ISettings _Settings;
 		private readonly ILazyWithRetry<MySqlConnection> _MySqlConnection;
+
+		public IOperation<AddQueueItemRequest, AddQueueItemResult> AddQueueItemOperation { get; }
+		public IOperation<string, int> ClearQueueOperation { get; }
+		public IOperation<LeaseQueueItemRequest, QueueItemResult> LeaseQueueItemOperation { get; }
+		public IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> ReleaseQueueItemOperation { get; }
+		public IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> RemoveQueueItemOperation { get; }
+		public IOperation<string, long> GetQueueSizeOperation { get; }
 
 		public QueueOperations(ILogger logger, ISettings settings)
 		{
@@ -22,6 +31,15 @@ namespace TixFactory.Queue
 			_Settings = settings ?? throw new ArgumentNullException(nameof(settings));
 			var mySqlConnection = _MySqlConnection = new LazyWithRetry<MySqlConnection>(BuildConnection);
 			var databaseConnection = new DatabaseConnection(mySqlConnection);
+			var queueEntityFactory = new QueueEntityFactory(databaseConnection);
+			var queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
+
+			AddQueueItemOperation = new AddQueueItemOperation(queueItemEntityFactory);
+			ClearQueueOperation = new ClearQueueOperation(queueItemEntityFactory);
+			LeaseQueueItemOperation = new LeaseQueueItemOperation(queueItemEntityFactory, logger);
+			ReleaseQueueItemOperation = new ReleaseQueueItemOperation(queueItemEntityFactory);
+			RemoveQueueItemOperation = new RemoveQueueItemOperation(queueItemEntityFactory);
+			GetQueueSizeOperation = new GetQueueSizeOperation(queueItemEntityFactory);
 		}
 
 		private MySqlConnection BuildConnection()

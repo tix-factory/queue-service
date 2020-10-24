@@ -12,8 +12,6 @@
     <PackageReference Include="TixFactory.Operations" Version="$(TixFactoryVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Entities\" />
     <Folder Include="Implementation\" />
-    <Folder Include="Models\" />
   </ItemGroup>
 </Project>
