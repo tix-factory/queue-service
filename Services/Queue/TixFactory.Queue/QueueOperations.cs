@@ -15,6 +15,7 @@ namespace TixFactory.Queue
 		private readonly ILazyWithRetry<MySqlConnection> _MySqlConnection;
 
 		public IOperation<AddQueueItemRequest, AddQueueItemResult> AddQueueItemOperation { get; }
+		public IOperation<string, int> ClearQueueOperation { get; }
 
 		public QueueOperations(ILogger logger, ISettings settings)
 		{
@@ -30,6 +31,7 @@ namespace TixFactory.Queue
 			var queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
 
 			AddQueueItemOperation = new AddQueueItemOperation(queueItemEntityFactory);
+			ClearQueueOperation = new ClearQueueOperation(queueItemEntityFactory);
 		}
 
 		private MySqlConnection BuildConnection()

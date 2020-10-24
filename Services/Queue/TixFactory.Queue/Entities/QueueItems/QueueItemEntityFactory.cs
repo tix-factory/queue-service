@@ -10,6 +10,7 @@ namespace TixFactory.Queue.Entities
 		private const string _GetQueueSizeStoredProcedureName = "GetQueueSize";
 		private const string _ReleaseQueueItemStoredProcedureName = "ReleaseQueueItem";
 		private const string _LeaseQueueItemStoredProcedureName = "LeaseQueueItem";
+		private const string _ClearQueueStoredProcedureName = "ClearQueue";
 		private const string _DeleteQueueItemStoredProcedureName = "DeleteQueueItem";
 		private readonly IDatabaseConnection _DatabaseConnection;
 		private readonly IQueueEntityFactory _QueueEntityFactory;
@@ -78,6 +79,20 @@ namespace TixFactory.Queue.Entities
 			}
 
 			return count.Count;
+		}
+
+		public int ClearQueue(string queueName)
+		{
+			var queue = _QueueEntityFactory.GetQueueByName(queueName);
+			if (queue == null)
+			{
+				return 0;
+			}
+
+			return _DatabaseConnection.ExecuteWriteStoredProcedure(_ClearQueueStoredProcedureName, new[]
+			{
+				new MySqlParameter("@_QueueID", queue.Id)
+			});
 		}
 
 		public bool ReleaseQueueItem(long id, Guid holderId)

@@ -21,5 +21,11 @@ namespace TixFactory.Queue.Service.Controllers
 		{
 			return _OperationExecuter.Execute(_QueueOperations.AddQueueItemOperation, request);
 		}
+
+		[HttpPost]
+		public IActionResult ClearQueue([FromBody] RequestPayload<string> request)
+		{
+			return _OperationExecuter.Execute(_QueueOperations.ClearQueueOperation, request.Data);
+		}
 	}
 }
