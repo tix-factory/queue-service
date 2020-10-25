@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MySql.Data.MySqlClient;
+using TixFactory.Data.MySql;
 
 namespace TixFactory.Queue.Entities
 {
@@ -68,18 +69,10 @@ namespace TixFactory.Queue.Entities
 				return 0;
 			}
 
-			var countResults = _DatabaseConnection.ExecuteReadStoredProcedure<CountResult>(_GetQueueSizeStoredProcedureName, new[]
+			return _DatabaseConnection.ExecuteCountStoredProcedure(_GetQueueSizeStoredProcedureName, new[]
 			{
 				new MySqlParameter("@_QueueID", queue.Id)
 			});
-
-			var count = countResults.FirstOrDefault();
-			if (count == null)
-			{
-				return 0;
-			}
-
-			return count.Count;
 		}
 
 		public long GetHeldQueueSize(string queueName)
@@ -90,18 +83,10 @@ namespace TixFactory.Queue.Entities
 				return 0;
 			}
 
-			var countResults = _DatabaseConnection.ExecuteReadStoredProcedure<CountResult>(_GetHeldQueueSizeStoredProcedureName, new[]
+			return _DatabaseConnection.ExecuteCountStoredProcedure(_GetHeldQueueSizeStoredProcedureName, new[]
 			{
 				new MySqlParameter("@_QueueID", queue.Id)
 			});
-
-			var count = countResults.FirstOrDefault();
-			if (count == null)
-			{
-				return 0;
-			}
-
-			return count.Count;
 		}
 
 		public int ClearQueue(string queueName)

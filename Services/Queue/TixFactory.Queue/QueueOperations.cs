@@ -1,5 +1,6 @@
 ﻿using System;
 using TixFactory.Configuration;
+using TixFactory.Data.MySql;
 using TixFactory.Logging;
 using TixFactory.Operations;
 using TixFactory.Queue.Entities;
