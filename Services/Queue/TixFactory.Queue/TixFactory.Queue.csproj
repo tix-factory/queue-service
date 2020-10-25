@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <TixFactoryVersion>2.0.109</TixFactoryVersion>
+    <TixFactoryVersion>2.0.116</TixFactoryVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="8.0.21" />
     <PackageReference Include="TixFactory.ApplicationContext" Version="$(TixFactoryVersion)" />
     <PackageReference Include="TixFactory.Configuration" Version="$(TixFactoryVersion)" />
+    <PackageReference Include="TixFactory.Data.MySql" Version="$(TixFactoryVersion)" />
     <PackageReference Include="TixFactory.Http.Client" Version="$(TixFactoryVersion)" />
     <PackageReference Include="TixFactory.Logging" Version="$(TixFactoryVersion)" />
     <PackageReference Include="TixFactory.Operations" Version="$(TixFactoryVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Implementation\" />
   </ItemGroup>
 </Project>
