@@ -6,7 +6,7 @@ CREATE PROCEDURE `DeleteQueueItem`(
 )
 BEGIN
 	DELETE
-		FROM `queue`.`queues`
+		FROM `queue`.`queue-items`
 		WHERE (`ID` = _ID)
 		AND (`HolderID` = _HolderID)
 		AND (`LockExpiration` >= UTC_Timestamp())
