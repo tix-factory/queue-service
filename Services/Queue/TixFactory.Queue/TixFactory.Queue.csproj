@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <TixFactoryVersion>2.0.116</TixFactoryVersion>
+    <TixFactoryVersion>2.0.118</TixFactoryVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TixFactory.ApplicationContext" Version="$(TixFactoryVersion)" />
