@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <TixFactoryVersion>2.0.118</TixFactoryVersion>
+    <TixFactoryVersion>2.0.150</TixFactoryVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TixFactory.ApplicationAuthorization" Version="$(TixFactoryVersion)" />
