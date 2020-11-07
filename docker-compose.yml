@@ -5,6 +5,7 @@ services:
     container_name: queue-service
     environment:
       ApplicationApiKey: "" # ME: Put the TixFactory.Queue.Service ApiKey here!
+      LoggingServiceHost: logging.services.tixfactory.systems
     networks:
       tix-factory:
         aliases:
