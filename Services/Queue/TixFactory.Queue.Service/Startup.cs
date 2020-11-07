@@ -52,7 +52,8 @@ namespace TixFactory.Queue.Service
 		{
 			var httpClient = new HttpClient();
 			var consoleLogger = new ConsoleLogger();
-			return new NetworkLogger(httpClient, consoleLogger, "TFQS1.TixFactory.Queue.Service", "monitoring.tixfactory.systems");
+			var loggingServiceHost = Environment.GetEnvironmentVariable("LoggingServiceHost");
+			return new NetworkLogger(httpClient, consoleLogger, "TFQS1.TixFactory.Queue.Service", loggingServiceHost);
 		}
 
 		private ISetting<Guid> GetApplicationKey()

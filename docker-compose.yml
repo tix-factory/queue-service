@@ -5,10 +5,15 @@ services:
     container_name: queue-service
     environment:
       ApplicationApiKey: "" # ME: Put the TixFactory.Queue.Service ApiKey here!
+      LoggingServiceHost: logging.services.tixfactory.systems
     networks:
       tix-factory:
         aliases:
           - tix-factory-queue-service
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "80:80"
     restart: always
