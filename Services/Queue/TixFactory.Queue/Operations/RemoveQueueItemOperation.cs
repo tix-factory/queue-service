@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TixFactory.Operations;
 using TixFactory.Queue.Entities;
 
 namespace TixFactory.Queue
 {
-	internal class RemoveQueueItemOperation : IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult>
+	internal class RemoveQueueItemOperation : IAsyncOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult>
 	{
 		private readonly IQueueItemEntityFactory _QueueItemEntityFactory;
 
@@ -13,9 +15,9 @@ namespace TixFactory.Queue
 			_QueueItemEntityFactory = queueItemEntityFactory ?? throw new ArgumentNullException(nameof(queueItemEntityFactory));
 		}
 
-		public (ReleaseQueueItemResult output, OperationError error) Execute(ReleaseQueueItemRequest request)
+		public async Task<(ReleaseQueueItemResult output, OperationError error)> Execute(ReleaseQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			var released = _QueueItemEntityFactory.DeleteQueueItem(request.Id, request.LeaseId);
+			var released = await _QueueItemEntityFactory.DeleteQueueItem(request.Id, request.LeaseId, cancellationToken).ConfigureAwait(false);
 			if (!released)
 			{
 				return (ReleaseQueueItemResult.InvalidLeaseHolder, null);

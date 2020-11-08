@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TixFactory.Logging;
 using TixFactory.Operations;
 using TixFactory.Queue.Entities;
 
 namespace TixFactory.Queue
 {
-	internal class LeaseQueueItemOperation : IOperation<LeaseQueueItemRequest, QueueItemResult>
+	internal class LeaseQueueItemOperation : IAsyncOperation<LeaseQueueItemRequest, QueueItemResult>
 	{
 		private readonly IQueueItemEntityFactory _QueueItemEntityFactory;
 		private readonly ILogger _Logger;
@@ -16,9 +18,9 @@ namespace TixFactory.Queue
 			_Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}
 
-		public (QueueItemResult output, OperationError error) Execute(LeaseQueueItemRequest request)
+		public async Task<(QueueItemResult output, OperationError error)> Execute(LeaseQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			var queueItem = _QueueItemEntityFactory.LeaseQueueItem(request.QueueName, TimeSpan.Parse(request.LeaseExpiry));
+			var queueItem = await _QueueItemEntityFactory.LeaseQueueItem(request.QueueName, TimeSpan.Parse(request.LeaseExpiry), cancellationToken).ConfigureAwait(false);
 			if (queueItem == null)
 			{
 				return (null, null);

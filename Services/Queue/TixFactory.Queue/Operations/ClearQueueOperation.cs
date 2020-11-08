@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TixFactory.Operations;
 using TixFactory.Queue.Entities;
 
 namespace TixFactory.Queue
 {
-	internal class ClearQueueOperation : IOperation<string, int>
+	internal class ClearQueueOperation : IAsyncOperation<string, int>
 	{
 		private readonly IQueueItemEntityFactory _QueueItemEntityFactory;
 
@@ -13,9 +15,9 @@ namespace TixFactory.Queue
 			_QueueItemEntityFactory = queueItemEntityFactory ?? throw new ArgumentNullException(nameof(queueItemEntityFactory));
 		}
 
-		public (int output, OperationError error) Execute(string queueName)
+		public async Task<(int output, OperationError error)> Execute(string queueName, CancellationToken cancellationToken)
 		{
-			var cleared = _QueueItemEntityFactory.ClearQueue(queueName);
+			var cleared = await _QueueItemEntityFactory.ClearQueue(queueName, cancellationToken).ConfigureAwait(false);
 			return (cleared, null);
 		}
 	}

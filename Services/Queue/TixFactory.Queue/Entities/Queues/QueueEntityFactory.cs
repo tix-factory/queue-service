@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using TixFactory.Collections;
 using TixFactory.Configuration;
@@ -26,7 +28,7 @@ namespace TixFactory.Queue.Entities
 				expirationPolicy: new Setting<ExpirationPolicy>(ExpirationPolicy.RenewOnRead));
 		}
 
-		public Queue GetOrCreateQueue(string name)
+		public async Task<Queue> GetOrCreateQueue(string name, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(name))
 			{
@@ -38,23 +40,23 @@ namespace TixFactory.Queue.Entities
 				throw new ArgumentException($"{nameof(name)} cannot be longer than {EntityValidation.MaxQueueNameLength}", nameof(name));
 			}
 
-			var queue = GetQueueByName(name);
+			var queue = await GetQueueByName(name, cancellationToken).ConfigureAwait(false);
 			if (queue != null)
 			{
 				return queue;
 			}
 
-			var queueId = _DatabaseConnection.ExecuteInsertStoredProcedure<long>(_InsertQueueStoredProcedureName, new[]
+			var queueId = await _DatabaseConnection.ExecuteInsertStoredProcedureAsync<long>(_InsertQueueStoredProcedureName, new[]
 			{
 				new MySqlParameter("@_Name", name)
-			});
+			}, cancellationToken).ConfigureAwait(false);
 
 			_QueuesByName.Remove(name);
 
-			return GetQueueByName(name);
+			return await GetQueueByName(name, cancellationToken).ConfigureAwait(false);
 		}
 
-		public Queue GetQueueByName(string name)
+		public async Task<Queue> GetQueueByName(string name, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(name) || name.Length > EntityValidation.MaxQueueNameLength)
 			{
@@ -66,30 +68,23 @@ namespace TixFactory.Queue.Entities
 				return queue;
 			}
 
-			var queues = _DatabaseConnection.ExecuteReadStoredProcedure<Queue>(_GetQueueByNameStoredProcedureName, new[]
+			var queues = await _DatabaseConnection.ExecuteReadStoredProcedureAsync<Queue>(_GetQueueByNameStoredProcedureName, new[]
 			{
 				new MySqlParameter("@_Name", name)
-			});
+			}, cancellationToken).ConfigureAwait(false);
 
 			queue = _QueuesByName[name] = queues.FirstOrDefault();
 			return queue;
 		}
 
-		public void DeleteQueue(long id)
+		public async Task DeleteQueue(Queue queue, CancellationToken cancellationToken)
 		{
-			_DatabaseConnection.ExecuteWriteStoredProcedure(_DeleteQueueStoredProcedureName, new[]
+			await _DatabaseConnection.ExecuteWriteStoredProcedureAsync(_DeleteQueueStoredProcedureName, new[]
 			{
-				new MySqlParameter(@"_ID", id)
-			});
+				new MySqlParameter(@"_ID", queue.Id)
+			}, cancellationToken).ConfigureAwait(false);
 
-			foreach (var queue in _QueuesByName.Values)
-			{
-				if (queue.Id == id)
-				{
-					_QueuesByName.Remove(queue.Name);
-					return;
-				}
-			}
+			_QueuesByName.Remove(queue.Name);
 		}
 	}
 }
