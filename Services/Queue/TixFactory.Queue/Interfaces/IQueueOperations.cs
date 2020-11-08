@@ -4,18 +4,18 @@ namespace TixFactory.Queue
 {
 	public interface IQueueOperations
 	{
-		IOperation<AddQueueItemRequest, AddQueueItemResult> AddQueueItemOperation { get; }
+		IAsyncOperation<AddQueueItemRequest, AddQueueItemResult> AddQueueItemOperation { get; }
 
-		IOperation<string, int> ClearQueueOperation { get; }
+		IAsyncOperation<string, int> ClearQueueOperation { get; }
 
-		IOperation<LeaseQueueItemRequest, QueueItemResult> LeaseQueueItemOperation { get; }
+		IAsyncOperation<LeaseQueueItemRequest, QueueItemResult> LeaseQueueItemOperation { get; }
 
-		IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> ReleaseQueueItemOperation { get; }
+		IAsyncOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> ReleaseQueueItemOperation { get; }
 
-		IOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> RemoveQueueItemOperation { get; }
+		IAsyncOperation<ReleaseQueueItemRequest, ReleaseQueueItemResult> RemoveQueueItemOperation { get; }
 
-		IOperation<string, long> GetQueueSizeOperation { get; }
+		IAsyncOperation<string, long> GetQueueSizeOperation { get; }
 
-		IOperation<string, long> GetHeldQueueSizeOperation { get; }
+		IAsyncOperation<string, long> GetHeldQueueSizeOperation { get; }
 	}
 }

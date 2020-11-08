@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TixFactory.Operations;
 using TixFactory.Queue.Entities;
 
 namespace TixFactory.Queue
 {
-	internal class GetHeldQueueSizeOperation : IOperation<string, long>
+	internal class GetHeldQueueSizeOperation : IAsyncOperation<string, long>
 	{
 		private readonly IQueueItemEntityFactory _QueueItemEntityFactory;
 
@@ -13,7 +15,7 @@ namespace TixFactory.Queue
 			_QueueItemEntityFactory = queueItemEntityFactory ?? throw new ArgumentNullException(nameof(queueItemEntityFactory));
 		}
 
-		public (long output, OperationError error) Execute(string queueName)
+		public async Task<(long output, OperationError error)> Execute(string queueName, CancellationToken cancellationToken)
 		{
 			var queueSize = _QueueItemEntityFactory.GetHeldQueueSize(queueName);
 			return (queueSize, null);

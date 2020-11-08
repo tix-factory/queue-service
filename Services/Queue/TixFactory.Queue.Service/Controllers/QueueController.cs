@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TixFactory.Http.Service;
 
@@ -17,45 +19,45 @@ namespace TixFactory.Queue.Service.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult AddQueueItem([FromBody] AddQueueItemRequest request)
+		public Task<IActionResult> AddQueueItem([FromBody] AddQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			return _OperationExecuter.Execute(_QueueOperations.AddQueueItemOperation, request);
+			return _OperationExecuter.ExecuteAsync(_QueueOperations.AddQueueItemOperation, request, cancellationToken);
 		}
 
 		[HttpPost]
-		public IActionResult ClearQueue([FromBody] RequestPayload<string> request)
+		public Task<IActionResult> ClearQueue([FromBody] RequestPayload<string> request, CancellationToken cancellationToken)
 		{
-			return _OperationExecuter.Execute(_QueueOperations.ClearQueueOperation, request.Data);
+			return _OperationExecuter.ExecuteAsync(_QueueOperations.ClearQueueOperation, request.Data, cancellationToken);
 		}
 
 		[HttpPost]
-		public IActionResult LeaseQueueItem([FromBody] LeaseQueueItemRequest request)
+		public Task<IActionResult> LeaseQueueItem([FromBody] LeaseQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			return _OperationExecuter.Execute(_QueueOperations.LeaseQueueItemOperation, request);
+			return _OperationExecuter.ExecuteAsync(_QueueOperations.LeaseQueueItemOperation, request, cancellationToken);
 		}
 
 		[HttpPost]
-		public IActionResult ReleaseQueueItem([FromBody] ReleaseQueueItemRequest request)
+		public Task<IActionResult> ReleaseQueueItem([FromBody] ReleaseQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			return _OperationExecuter.Execute(_QueueOperations.ReleaseQueueItemOperation, request);
+			return _OperationExecuter.ExecuteAsync(_QueueOperations.ReleaseQueueItemOperation, request, cancellationToken);
 		}
 
 		[HttpPost]
-		public IActionResult RemoveQueueItem([FromBody] ReleaseQueueItemRequest request)
+		public Task<IActionResult> RemoveQueueItem([FromBody] ReleaseQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			return _OperationExecuter.Execute(_QueueOperations.RemoveQueueItemOperation, request);
+			return _OperationExecuter.ExecuteAsync(_QueueOperations.RemoveQueueItemOperation, request, cancellationToken);
 		}
 
 		[HttpPost]
-		public IActionResult GetQueueSize([FromBody] RequestPayload<string> request)
+		public Task<IActionResult> GetQueueSize([FromBody] RequestPayload<string> request, CancellationToken cancellationToken)
 		{
-			return _OperationExecuter.Execute(_QueueOperations.GetQueueSizeOperation, request.Data);
+			return _OperationExecuter.ExecuteAsync(_QueueOperations.GetQueueSizeOperation, request.Data, cancellationToken);
 		}
 
 		[HttpPost]
-		public IActionResult GetHeldQueueSize([FromBody] RequestPayload<string> request)
+		public Task<IActionResult> GetHeldQueueSize([FromBody] RequestPayload<string> request, CancellationToken cancellationToken)
 		{
-			return _OperationExecuter.Execute(_QueueOperations.GetHeldQueueSizeOperation, request.Data);
+			return _OperationExecuter.ExecuteAsync(_QueueOperations.GetHeldQueueSizeOperation, request.Data, cancellationToken);
 		}
 	}
 }

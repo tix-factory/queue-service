@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using TixFactory.Operations;
 using TixFactory.Queue.Entities;
 
 namespace TixFactory.Queue
 {
-	internal class AddQueueItemOperation : IOperation<AddQueueItemRequest, AddQueueItemResult>
+	internal class AddQueueItemOperation : IAsyncOperation<AddQueueItemRequest, AddQueueItemResult>
 	{
 		private readonly IQueueItemEntityFactory _QueueItemEntityFactory;
 
@@ -13,7 +15,7 @@ namespace TixFactory.Queue
 			_QueueItemEntityFactory = queueItemEntityFactory ?? throw new ArgumentNullException(nameof(queueItemEntityFactory));
 		}
 
-		public (AddQueueItemResult output, OperationError error) Execute(AddQueueItemRequest request)
+		public async Task<(AddQueueItemResult output, OperationError error)> Execute(AddQueueItemRequest request, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(request.QueueName) || request.QueueName.Length > EntityValidation.MaxQueueNameLength)
 			{
