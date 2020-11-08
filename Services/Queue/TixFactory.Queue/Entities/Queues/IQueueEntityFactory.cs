@@ -1,11 +1,14 @@
-﻿namespace TixFactory.Queue.Entities
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace TixFactory.Queue.Entities
 {
 	internal interface IQueueEntityFactory
 	{
-		Queue GetOrCreateQueue(string name);
+		Task<Queue> GetOrCreateQueue(string name, CancellationToken cancellationToken);
 
-		Queue GetQueueByName(string name);
+		Task<Queue> GetQueueByName(string name, CancellationToken cancellationToken);
 
-		void DeleteQueue(long id);
+		Task DeleteQueue(Queue queue, CancellationToken cancellationToken);
 	}
 }

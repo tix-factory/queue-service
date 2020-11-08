@@ -1,21 +1,23 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TixFactory.Queue.Entities
 {
 	internal interface IQueueItemEntityFactory
 	{
-		void CreateQueueItem(string queueName, string data);
+		Task CreateQueueItem(string queueName, string data, CancellationToken cancellationToken);
 
-		QueueItem LeaseQueueItem(string queueName, TimeSpan leaseExpiry);
+		Task<QueueItem> LeaseQueueItem(string queueName, TimeSpan leaseExpiry, CancellationToken cancellationToken);
 
-		long GetQueueSize(string queueName);
+		Task<long> GetQueueSize(string queueName, CancellationToken cancellationToken);
 
-		long GetHeldQueueSize(string queueName);
+		Task<long> GetHeldQueueSize(string queueName, CancellationToken cancellationToken);
 
-		int ClearQueue(string queueName);
+		Task<int> ClearQueue(string queueName, CancellationToken cancellationToken);
 
-		bool ReleaseQueueItem(long id, Guid holderId);
+		Task<bool> ReleaseQueueItem(long id, Guid holderId, CancellationToken cancellationToken);
 
-		bool DeleteQueueItem(long id, Guid holderId);
+		Task<bool> DeleteQueueItem(long id, Guid holderId, CancellationToken cancellationToken);
 	}
 }

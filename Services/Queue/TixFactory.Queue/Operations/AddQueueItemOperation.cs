@@ -27,7 +27,7 @@ namespace TixFactory.Queue
 				return (default, new OperationError(QueueError.InvalidData));
 			}
 
-			_QueueItemEntityFactory.CreateQueueItem(request.QueueName, request.Data);
+			await _QueueItemEntityFactory.CreateQueueItem(request.QueueName, request.Data, cancellationToken).ConfigureAwait(false);
 			return (AddQueueItemResult.Added, null);
 		}
 	}

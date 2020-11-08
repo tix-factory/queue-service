@@ -17,7 +17,7 @@ namespace TixFactory.Queue
 
 		public async Task<(ReleaseQueueItemResult output, OperationError error)> Execute(ReleaseQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			var released = _QueueItemEntityFactory.ReleaseQueueItem(request.Id, request.LeaseId);
+			var released = await _QueueItemEntityFactory.ReleaseQueueItem(request.Id, request.LeaseId, cancellationToken).ConfigureAwait(false);
 			if (!released)
 			{
 				return (ReleaseQueueItemResult.InvalidLeaseHolder, null);

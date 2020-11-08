@@ -17,7 +17,7 @@ namespace TixFactory.Queue
 
 		public async Task<(long output, OperationError error)> Execute(string queueName, CancellationToken cancellationToken)
 		{
-			var queueSize = _QueueItemEntityFactory.GetQueueSize(queueName);
+			var queueSize = await _QueueItemEntityFactory.GetQueueSize(queueName, cancellationToken).ConfigureAwait(false);
 			return (queueSize, null);
 		}
 	}

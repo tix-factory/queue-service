@@ -20,7 +20,7 @@ namespace TixFactory.Queue
 
 		public async Task<(QueueItemResult output, OperationError error)> Execute(LeaseQueueItemRequest request, CancellationToken cancellationToken)
 		{
-			var queueItem = _QueueItemEntityFactory.LeaseQueueItem(request.QueueName, TimeSpan.Parse(request.LeaseExpiry));
+			var queueItem = await _QueueItemEntityFactory.LeaseQueueItem(request.QueueName, TimeSpan.Parse(request.LeaseExpiry), cancellationToken).ConfigureAwait(false);
 			if (queueItem == null)
 			{
 				return (null, null);

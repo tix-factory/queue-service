@@ -17,7 +17,7 @@ namespace TixFactory.Queue
 
 		public async Task<(int output, OperationError error)> Execute(string queueName, CancellationToken cancellationToken)
 		{
-			var cleared = _QueueItemEntityFactory.ClearQueue(queueName);
+			var cleared = await _QueueItemEntityFactory.ClearQueue(queueName, cancellationToken).ConfigureAwait(false);
 			return (cleared, null);
 		}
 	}
