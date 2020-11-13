@@ -31,7 +31,7 @@ namespace TixFactory.Queue
 			}
 
 			var connectionString = new ManufacturedSetting<string>(() => settings.QueueConnectionString, refreshOnRead: false);
-			var databaseConnection = new DatabaseConnection(connectionString, logger);
+			var databaseConnection = new DatabaseConnection(connectionString, logger, maxConnections: 0);
 			var queueEntityFactory = new QueueEntityFactory(databaseConnection);
 			var queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
 
