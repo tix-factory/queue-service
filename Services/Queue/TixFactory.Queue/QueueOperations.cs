@@ -30,7 +30,7 @@ namespace TixFactory.Queue
 				throw new ArgumentNullException(nameof(settings));
 			}
 
-			var connectionString = new ManufacturedSetting<string>(() => settings.QueueConnectionString, refreshOnRead: true);
+			var connectionString = new ManufacturedSetting<string>(() => settings.QueueConnectionString, refreshOnRead: false);
 			var databaseConnection = new DatabaseConnection(connectionString, logger);
 			var queueEntityFactory = new QueueEntityFactory(databaseConnection);
 			var queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
