@@ -1,6 +1,4 @@
 import http from "@tix-factory/http";
-const MaxQueueDataLength = 32786;
-const ValidationRegex = /^\s+$/;
 
 export default class {
 	constructor(queueItemEntityFactory) {
@@ -12,7 +10,7 @@ export default class {
     }
  
     get name() {
-        return "AddQueueItem";
+        return "ClearQueue";
     }
  
     get route() {
@@ -32,14 +30,8 @@ export default class {
 
         return new Promise(async (resolve, reject) => {
 			try {
-				const queueData = requestBody.data;
-				if (!queueData || ValidationRegex.test(queueData) || queueData.length > MaxQueueDataLength) {
-					reject("InvalidData");
-					return;
-				}
-
-				const queueItemId = await this.queueItemEntityFactory.insertQueueItem(requestBody.queuename, queueData);
-				resolve(queueItemId);
+				const count = await this.queueItemEntityFactory.clearQueue(requestBody.queuename);
+				resolve(count);
 			} catch(e) {
 				reject(e);
 			}

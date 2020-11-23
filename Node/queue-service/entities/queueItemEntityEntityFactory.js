@@ -47,12 +47,6 @@ export default class {
 	releaseQueueItem(queueItemId, holderId) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
-				if (!queueId) {
-					resolve(false);
-					return;
-				}
-
 				const connection = await this.databaseConnection.getConnection();
 				const rowsModified = await connection.executeReadStoredProcedure("ReleaseQueueItem", {
 					_ID: queueItemId,
@@ -69,12 +63,6 @@ export default class {
 	deleteQueueItem(queueItemId, holderId) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
-				if (!queueId) {
-					resolve(false);
-					return;
-				}
-
 				const connection = await this.databaseConnection.getConnection();
 				const rowsModified = await connection.executeReadStoredProcedure("DeleteQueueItem", {
 					_ID: queueItemId,
