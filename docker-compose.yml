@@ -17,7 +17,7 @@ services:
         max-size: "10m"
         max-file: "3"
     ports:
-      - "80:80"
+      - "80:3000"
     restart: always
 networks:
   tix-factory:
