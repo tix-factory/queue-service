@@ -7,24 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.x
-    - name: Create Build Directories
-      run: |
-        mkdir -p ./Build/NuGet/Cache
-        mkdir -p ./Build/Publish/Application
-        cp ./Services/Queue/TixFactory.Queue.Service/Dockerfile ./Build/Publish/Dockerfile
-    - name: Restore
-      run: dotnet restore ./Services/Queue/TixFactory.Queue.Service.sln
-    - name: Build + Publish
-      run: dotnet publish ./Services/Queue/TixFactory.Queue.Service/TixFactory.Queue.Service.csproj --output ./Build/Publish/Application --configuration Release --runtime linux-x64 --self-contained true
-    - name: Verify Publish
-      working-directory: ./Build/Publish/Application
-      run: dir
     - name: Create Docker Image
-      run: docker build --tag tixfactory/queue-service:latest ./Build/Publish
+      run: docker build --tag tixfactory/queue-service:latest ./Node/queue-service
     - name: Login to DockerHub
       if: ${{ github.ref == 'refs/heads/main' }}
       uses: docker/login-action@v1

@@ -6,6 +6,8 @@ services:
     environment:
       ApplicationApiKey: "" # ME: Put the TixFactory.Queue.Service ApiKey here!
       LoggingServiceHost: logging.services.tixfactory.systems
+      ApplicationAuthorizationServiceHost: applicationauthorization.services.tixfactory.systems
+      ConfigurationServiceHost: applicationconfiguration.services.tixfactory.systems
     networks:
       tix-factory:
         aliases:
