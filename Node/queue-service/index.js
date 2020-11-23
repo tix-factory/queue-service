@@ -12,6 +12,8 @@ import ClearQueueOperation from "./operations/ClearQueueOperation.js";
 import GetQueueSizeOperation from "./operations/GetQueueSizeOperation.js";
 import GetHeldQueueSizeOperation from "./operations/GetHeldQueueSizeOperation.js";
 import LeaseQueueItemOperation from "./operations/LeaseQueueItemOperation.js";
+import ReleaseQueueItemOperation from "./operations/ReleaseQueueItemOperation.js";
+import RemoveQueueItemOperation from "./operations/RemoveQueueItemOperation.js";
 
 const workingDirectory = dirname(fileURLToPath(import.meta.url));
 const serviceOptions = {
@@ -35,3 +37,5 @@ operationRegistry.registerOperation(new ClearQueueOperation(queueItemEntityFacto
 operationRegistry.registerOperation(new GetQueueSizeOperation(queueItemEntityFactory));
 operationRegistry.registerOperation(new GetHeldQueueSizeOperation(queueItemEntityFactory));
 operationRegistry.registerOperation(new LeaseQueueItemOperation(queueItemEntityFactory));
+operationRegistry.registerOperation(new ReleaseQueueItemOperation(queueItemEntityFactory));
+operationRegistry.registerOperation(new RemoveQueueItemOperation(queueItemEntityFactory));
