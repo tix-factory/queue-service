@@ -10,7 +10,7 @@ export default class {
     }
  
     get name() {
-        return "ClearQueue";
+        return "GetHeldQueueSize";
     }
  
     get route() {
@@ -30,7 +30,7 @@ export default class {
 
         return new Promise(async (resolve, reject) => {
 			try {
-				const count = await this.queueItemEntityFactory.clearQueue(requestBody.data);
+				const count = await this.queueItemEntityFactory.getHeldQueueSize(requestBody.data);
 				resolve(count);
 			} catch(e) {
 				reject(e);

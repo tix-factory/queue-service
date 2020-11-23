@@ -8,6 +8,9 @@ import QueueEntityFactory from "./entities/queueEntityFactory.js";
 import QueueItemEntityFactory from "./entities/queueItemEntityEntityFactory.js";
 
 import AddQueueItemOperation from "./operations/AddQueueItemOperation.js";
+import ClearQueueOperation from "./operations/ClearQueueOperation.js";
+import GetQueueSizeOperation from "./operations/GetQueueSizeOperation.js";
+import GetHeldQueueSizeOperation from "./operations/GetHeldQueueSizeOperation.js";
 import LeaseQueueItemOperation from "./operations/LeaseQueueItemOperation.js";
 
 const workingDirectory = dirname(fileURLToPath(import.meta.url));
@@ -28,4 +31,7 @@ const queueEntityFactory = new QueueEntityFactory(databaseConnection);
 const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
 
 operationRegistry.registerOperation(new AddQueueItemOperation(queueItemEntityFactory));
+operationRegistry.registerOperation(new ClearQueueOperation(queueItemEntityFactory));
+operationRegistry.registerOperation(new GetQueueSizeOperation(queueItemEntityFactory));
+operationRegistry.registerOperation(new GetHeldQueueSizeOperation(queueItemEntityFactory));
 operationRegistry.registerOperation(new LeaseQueueItemOperation(queueItemEntityFactory));

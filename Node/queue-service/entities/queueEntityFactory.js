@@ -28,9 +28,9 @@ export default class {
 
 				const cacheKey = queueName.toLowerCase();
 				this.idByNameCache[cacheKey] = queueId = await this.executeInsertStoredProcedure("InsertQueue", {
-					_Name = queueName
+					_Name: queueName
 				});
-
+				
 				resolve(queueId);
 			} catch (e) {
 				reject(e);
