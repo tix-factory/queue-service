@@ -48,7 +48,7 @@ export default class {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const connection = await this.databaseConnection.getConnection();
-				const rowsModified = await connection.executeReadStoredProcedure("ReleaseQueueItem", {
+				const rowsModified = await connection.executeWriteStoredProcedure("ReleaseQueueItem", {
 					_ID: queueItemId,
 					_HolderID: holderId
 				});
@@ -64,7 +64,7 @@ export default class {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const connection = await this.databaseConnection.getConnection();
-				const rowsModified = await connection.executeReadStoredProcedure("DeleteQueueItem", {
+				const rowsModified = await connection.executeWriteStoredProcedure("DeleteQueueItem", {
 					_ID: queueItemId,
 					_HolderID: holderId
 				});
@@ -86,7 +86,7 @@ export default class {
 				}
 	
 				const connection = await this.databaseConnection.getConnection();
-				const rowsModified = await connection.executeReadStoredProcedure("ClearQueue", {
+				const rowsModified = await connection.executeWriteStoredProcedure("ClearQueue", {
 					_QueueID: queueId
 				});
 	
