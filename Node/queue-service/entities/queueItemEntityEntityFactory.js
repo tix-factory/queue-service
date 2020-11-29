@@ -8,8 +8,7 @@ export default class {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const queueId = await this.queueEntityFactory.getOrCreateQueueIdByName(queueName);
-				const connection = await this.databaseConnection.getConnection();
-				const queueItemId = await connection.executeInsertStoredProcedure("InsertQueueItem", {
+				const queueItemId = await this.databaseConnection.executeInsertStoredProcedure("InsertQueueItem", {
 					_QueueID: queueId,
 					_Data: data
 				});
@@ -30,9 +29,8 @@ export default class {
 					return;
 				}
 
-				const connection = await this.databaseConnection.getConnection();
 				const currentDate = +new Date;
-				const entities = await connection.executeReadStoredProcedure("LeaseQueueItem", {
+				const entities = await this.databaseConnection.executeReadStoredProcedure("LeaseQueueItem", {
 					_QueueID: queueId,
 					_LockExpiration: new Date(currentDate + expirationInMilliseconds)
 				});
@@ -47,8 +45,7 @@ export default class {
 	releaseQueueItem(queueItemId, holderId) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const connection = await this.databaseConnection.getConnection();
-				const rowsModified = await connection.executeReadStoredProcedure("ReleaseQueueItem", {
+				const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ReleaseQueueItem", {
 					_ID: queueItemId,
 					_HolderID: holderId
 				});
@@ -63,8 +60,7 @@ export default class {
 	deleteQueueItem(queueItemId, holderId) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const connection = await this.databaseConnection.getConnection();
-				const rowsModified = await connection.executeReadStoredProcedure("DeleteQueueItem", {
+				const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("DeleteQueueItem", {
 					_ID: queueItemId,
 					_HolderID: holderId
 				});
@@ -85,8 +81,7 @@ export default class {
 					return;
 				}
 	
-				const connection = await this.databaseConnection.getConnection();
-				const rowsModified = await connection.executeReadStoredProcedure("ClearQueue", {
+				const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ClearQueue", {
 					_QueueID: queueId
 				});
 	
@@ -106,8 +101,7 @@ export default class {
 					return;
 				}
 
-				const connection = await this.databaseConnection.getConnection();
-				const count = await connection.executeCountStoredProcedure("GetQueueSize", {
+				const count = await this.databaseConnection.executeCountStoredProcedure("GetQueueSize", {
 					_QueueID: queueId
 				});
 
@@ -127,8 +121,7 @@ export default class {
 					return;
 				}
 
-				const connection = await this.databaseConnection.getConnection();
-				const count = await connection.executeCountStoredProcedure("GetHeldQueueSize", {
+				const count = await this.databaseConnection.executeCountStoredProcedure("GetHeldQueueSize", {
 					_QueueID: queueId
 				});
 
