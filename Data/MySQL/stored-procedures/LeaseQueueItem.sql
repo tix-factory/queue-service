@@ -13,7 +13,7 @@ BEGIN
 		`LockExpiration` = _LockExpiration,
 		`Updated` = UTC_Timestamp()
 	WHERE (`QueueID` = _QueueID)
-		AND (`LockExpiration` < UTC_Timestamp())
+		AND (`LockExpiration` <= UTC_Timestamp())
 	ORDER BY `ID` ASC
 	LIMIT 1;
 
