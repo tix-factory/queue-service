@@ -1,6 +1,5 @@
 import { dirname } from "path";
 import { fileURLToPath } from 'url';
-import http from "@tix-factory/http";
 import httpService from "@tix-factory/http-service";
 import mysql from "@tix-factory/mysql-data";
 import configurationClientModule from "@tix-factory/configuration-client";
@@ -16,26 +15,42 @@ import ReleaseQueueItemOperation from "./operations/ReleaseQueueItemOperation.js
 import RemoveQueueItemOperation from "./operations/RemoveQueueItemOperation.js";
 
 const workingDirectory = dirname(fileURLToPath(import.meta.url));
-const serviceOptions = {
+
+const service = new httpService.server({
     name: "TixFactory.Queue.Service",
     logName: "TFQS2.TixFactory.Queue.Service"
+});
+
+const init = () => {
+	console.log(`Starting ${service.options.name}...\n\tWorking directory: ${workingDirectory}\n\tNODE_ENV: ${process.env.NODE_ENV}\n\tPort: ${service.options.port}`);
+
+	return new Promise(async (resolve, reject) => {
+		try {
+			const configurationClient = new configurationClientModule.configurationClient(service.httpClient, service.logger, {});
+			const configuredConnection = new mysql.ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", `${workingDirectory}/db-certificate.crt`);
+			const databaseConnection = await configuredConnection.getConnection();
+			const queueEntityFactory = new QueueEntityFactory(databaseConnection);
+			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
+			
+			service.operationRegistry.registerOperation(new AddQueueItemOperation(queueItemEntityFactory));
+			service.operationRegistry.registerOperation(new ClearQueueOperation(queueItemEntityFactory));
+			service.operationRegistry.registerOperation(new GetQueueSizeOperation(queueItemEntityFactory));
+			service.operationRegistry.registerOperation(new GetHeldQueueSizeOperation(queueItemEntityFactory));
+			service.operationRegistry.registerOperation(new LeaseQueueItemOperation(queueItemEntityFactory));
+			service.operationRegistry.registerOperation(new ReleaseQueueItemOperation(queueItemEntityFactory));
+			service.operationRegistry.registerOperation(new RemoveQueueItemOperation(queueItemEntityFactory));
+
+			resolve();
+		} catch (e) {
+			reject(e);
+		}
+	});
 };
 
-const httpClient = new http.client();
-const operationRegistry = new httpService.operationRegistry([]);
-const service = new httpService.server(httpClient, operationRegistry, serviceOptions);
-
-console.log(`Starting ${serviceOptions.name}...\n\tWorking directory: ${workingDirectory}`);
-
-const configurationClient = new configurationClientModule.configurationClient(httpClient, service.logger, {});
-const databaseConnection = new mysql.ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", `${workingDirectory}/db-certificate.crt`);
-const queueEntityFactory = new QueueEntityFactory(databaseConnection);
-const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
-
-operationRegistry.registerOperation(new AddQueueItemOperation(queueItemEntityFactory));
-operationRegistry.registerOperation(new ClearQueueOperation(queueItemEntityFactory));
-operationRegistry.registerOperation(new GetQueueSizeOperation(queueItemEntityFactory));
-operationRegistry.registerOperation(new GetHeldQueueSizeOperation(queueItemEntityFactory));
-operationRegistry.registerOperation(new LeaseQueueItemOperation(queueItemEntityFactory));
-operationRegistry.registerOperation(new ReleaseQueueItemOperation(queueItemEntityFactory));
-operationRegistry.registerOperation(new RemoveQueueItemOperation(queueItemEntityFactory));
+init().then(() => {
+	service.listen();
+}).catch(err => {
+	service.logger.error(err);
+	console.error(err);
+	process.exit(1);
+});

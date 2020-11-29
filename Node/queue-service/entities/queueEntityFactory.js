@@ -27,10 +27,10 @@ export default class {
 				}
 
 				const cacheKey = queueName.toLowerCase();
-				this.idByNameCache[cacheKey] = queueId = await this.executeInsertStoredProcedure("InsertQueue", {
+				this.idByNameCache[cacheKey] = queueId = await this.databaseConnection.executeInsertStoredProcedure("InsertQueue", {
 					_Name: queueName
 				});
-				
+
 				resolve(queueId);
 			} catch (e) {
 				reject(e);
@@ -52,8 +52,7 @@ export default class {
 					return;
 				}
 
-				const connection = await this.databaseConnection.getConnection();
-				const entities = await connection.executeReadStoredProcedure("GetQueueByName", {
+				const entities = await this.databaseConnection.executeReadStoredProcedure("GetQueueByName", {
 					_Name: queueName
 				});
 
