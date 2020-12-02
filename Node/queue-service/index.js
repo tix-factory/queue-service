@@ -34,7 +34,7 @@ const init = () => {
 			
 			service.operationRegistry.registerOperation(new AddQueueItemOperation(queueItemEntityFactory));
 			service.operationRegistry.registerOperation(new ClearQueueOperation(queueItemEntityFactory));
-			service.operationRegistry.registerOperation(new GetQueueSizeOperation(queueItemEntityFactory));
+			service.operationRegistry.registerOperation(new GetQueueSizeOperation(queueItemEntityFactory, service.promClient, service.logger));
 			service.operationRegistry.registerOperation(new GetHeldQueueSizeOperation(queueItemEntityFactory));
 			service.operationRegistry.registerOperation(new LeaseQueueItemOperation(queueItemEntityFactory));
 			service.operationRegistry.registerOperation(new ReleaseQueueItemOperation(queueItemEntityFactory));

@@ -1,8 +1,15 @@
 import http from "@tix-factory/http";
 
 export default class {
-	constructor(queueItemEntityFactory) {
+	constructor(queueItemEntityFactory, promClient, logger) {
 		this.queueItemEntityFactory = queueItemEntityFactory;
+		this.logger = logger;
+
+		this.sizeCounter = new promClient.Gauge({
+			name: "queue_size",
+			help: "Number of items in a queue.",
+			labelNames: ["queueName"]
+		});
 	}
 
     get allowAnonymous() {
@@ -31,10 +38,22 @@ export default class {
         return new Promise(async (resolve, reject) => {
 			try {
 				const count = await this.queueItemEntityFactory.getQueueSize(requestBody.data);
+				this.recordSize(requestBody.data, count);
+
 				resolve(count);
 			} catch(e) {
 				reject(e);
 			}
         });
-    }
+	}
+	
+	recordSize(queueName, count) {
+		try {
+			this.sizeCounter.set({
+				queueName: queueName
+			}, count);
+		} catch (e) {
+			this.logger.warn(`Failed to record queue size.\n\tQueue name: ${queueName}\n\tSize: ${count}\n`, e);
+		}
+	}
 };
