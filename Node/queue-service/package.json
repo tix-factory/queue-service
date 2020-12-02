@@ -19,8 +19,8 @@
   },
   "homepage": "https://github.com/tix-factory/queue-service#readme",
   "dependencies": {
-    "@tix-factory/http-service": "^2.0.55",
-    "@tix-factory/mysql-data": "^2.0.55",
-    "@tix-factory/configuration-client": "^2.0.55"
+    "@tix-factory/http-service": "^2.0.66",
+    "@tix-factory/mysql-data": "^2.0.66",
+    "@tix-factory/configuration-client": "^2.0.66"
   }
 }
