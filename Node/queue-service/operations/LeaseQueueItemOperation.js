@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { httpMethods } from "@tix-factory/http";
 
 const parseTimeSpan = (timespan) => {
 	const match = timespan.match(/^(\d*)\.?(\d{2}):(\d{2}):(\d{2})\.?(\d*)$/);
@@ -33,7 +33,7 @@ export default class {
     }
  
     get method() {
-        return http.methods.post;
+        return httpMethods.post;
     }
  
     execute(requestBody) {

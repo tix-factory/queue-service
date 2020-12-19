@@ -1,8 +1,8 @@
 import { dirname } from "path";
 import { fileURLToPath } from 'url';
-import httpService from "@tix-factory/http-service";
-import mysql from "@tix-factory/mysql-data";
-import configurationClientModule from "@tix-factory/configuration-client";
+import { HttpServer } from "@tix-factory/http-service";
+import { ConfiguredConnection } from "@tix-factory/mysql-data";
+import { ConfigurationClient } from "@tix-factory/configuration-client";
 import QueueEntityFactory from "./entities/queueEntityFactory.js";
 import QueueItemEntityFactory from "./entities/queueItemEntityEntityFactory.js";
 
@@ -16,7 +16,7 @@ import RemoveQueueItemOperation from "./operations/RemoveQueueItemOperation.js";
 
 const workingDirectory = dirname(fileURLToPath(import.meta.url));
 
-const service = new httpService.server({
+const service = new HttpServer({
     name: "TixFactory.Queue.Service",
     logName: "TFQS2.TixFactory.Queue.Service"
 });
@@ -26,8 +26,8 @@ const init = () => {
 
 	return new Promise(async (resolve, reject) => {
 		try {
-			const configurationClient = new configurationClientModule.configurationClient(service.httpClient, service.logger, {});
-			const configuredConnection = new mysql.ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", `${workingDirectory}/db-certificate.crt`);
+			const configurationClient = new ConfigurationClient(service.httpClient, service.logger, {});
+			const configuredConnection = new ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", `${workingDirectory}/db-certificate.crt`);
 			const databaseConnection = await configuredConnection.getConnection();
 			const queueEntityFactory = new QueueEntityFactory(databaseConnection);
 			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
