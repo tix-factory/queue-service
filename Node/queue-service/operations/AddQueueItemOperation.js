@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { httpMethods } from "@tix-factory/http";
 const MaxQueueDataLength = 32786;
 const ValidationRegex = /^\s+$/;
 
@@ -20,7 +20,7 @@ export default class {
     }
  
     get method() {
-        return http.methods.post;
+        return httpMethods.post;
     }
  
     execute(requestBody) {

@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { httpMethods } from "@tix-factory/http";
 
 export default class {
 	constructor(queueItemEntityFactory, promClient, logger) {
@@ -25,7 +25,7 @@ export default class {
     }
  
     get method() {
-        return http.methods.post;
+        return httpMethods.post;
     }
  
     execute(requestBody) {
