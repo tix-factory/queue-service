@@ -26,9 +26,14 @@ const init = () => {
 
 	return new Promise(async (resolve, reject) => {
 		try {
-			const configurationClient = new ConfigurationClient(service.httpClient, service.logger, {});
+			const configurationClient = new ConfigurationClient(service.httpClient, service.logger, {
+				maxDatabaseConnections: 25
+			});
+
+			const maxConnections = await configurationClient.getSettingValue("maxDatabaseConnections");
+
 			const configuredConnection = new ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", {
-				maxConnections: 25,
+				maxConnections: maxConnections,
 				sslCertificateFileName: `${workingDirectory}/db-certificate.crt`
 			});
 
