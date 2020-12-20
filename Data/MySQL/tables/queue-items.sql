@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `queue-items` (
 
 	PRIMARY KEY (`ID`),
 	CONSTRAINT `UC_HolderID` UNIQUE(`HolderID`),
+	INDEX `IX_QueueIDLockExpiration` (`QueueID`, `LockExpiration`)
 	-- With this constraint the database runs into extreme locking issues under heavy load.
 	-- FOREIGN KEY `FK_QueueItems_Queues_QueueID` (`QueueID`) REFERENCES `queues`(`ID`) ON DELETE CASCADE
 );

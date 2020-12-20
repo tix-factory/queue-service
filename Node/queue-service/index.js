@@ -27,7 +27,11 @@ const init = () => {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const configurationClient = new ConfigurationClient(service.httpClient, service.logger, {});
-			const configuredConnection = new ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", `${workingDirectory}/db-certificate.crt`);
+			const configuredConnection = new ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", {
+				maxConnections: 25,
+				sslCertificateFileName: `${workingDirectory}/db-certificate.crt`
+			});
+
 			const databaseConnection = await configuredConnection.getConnection();
 			const queueEntityFactory = new QueueEntityFactory(databaseConnection);
 			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
