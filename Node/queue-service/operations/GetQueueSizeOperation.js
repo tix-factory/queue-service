@@ -28,23 +28,17 @@ export default class {
         return httpMethods.post;
     }
  
-    execute(requestBody) {
+    async execute(requestBody) {
 		for (let key in requestBody) {
 			if (requestBody.hasOwnProperty(key)) {
 				requestBody[key.toLowerCase()] = requestBody[key];
 			}
 		}
 
-        return new Promise(async (resolve, reject) => {
-			try {
-				const count = await this.queueItemEntityFactory.getQueueSize(requestBody.data);
-				this.recordSize(requestBody.data, count);
+		const count = await this.queueItemEntityFactory.getQueueSize(requestBody.data);
+		this.recordSize(requestBody.data, count);
 
-				resolve(count);
-			} catch(e) {
-				reject(e);
-			}
-        });
+		return Promise.resolve(count);
 	}
 	
 	recordSize(queueName, count) {
