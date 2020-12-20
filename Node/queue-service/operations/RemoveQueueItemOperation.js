@@ -21,20 +21,14 @@ export default class {
         return httpMethods.post;
     }
  
-    execute(requestBody) {
+    async execute(requestBody) {
 		for (let key in requestBody) {
 			if (requestBody.hasOwnProperty(key)) {
 				requestBody[key.toLowerCase()] = requestBody[key];
 			}
 		}
 
-        return new Promise(async (resolve, reject) => {
-			try {
-				const removed = await this.queueItemEntityFactory.deleteQueueItem(requestBody.id, requestBody.leaseid);
-				resolve(removed ? "Removed" : "InvalidLeaseHolder");
-			} catch(e) {
-				reject(e);
-			}
-        });
+		const removed = await this.queueItemEntityFactory.deleteQueueItem(requestBody.id, requestBody.leaseid);
+		return Promise.resolve(removed ? "Removed" : "InvalidLeaseHolder");
     }
 };

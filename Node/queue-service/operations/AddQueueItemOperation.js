@@ -23,26 +23,19 @@ export default class {
         return httpMethods.post;
     }
  
-    execute(requestBody) {
+    async execute(requestBody) {
 		for (let key in requestBody) {
 			if (requestBody.hasOwnProperty(key)) {
 				requestBody[key.toLowerCase()] = requestBody[key];
 			}
 		}
 
-        return new Promise(async (resolve, reject) => {
-			try {
-				const queueData = requestBody.data;
-				if (!queueData || ValidationRegex.test(queueData) || queueData.length > MaxQueueDataLength) {
-					reject("InvalidData");
-					return;
-				}
+		const queueData = requestBody.data;
+		if (!queueData || ValidationRegex.test(queueData) || queueData.length > MaxQueueDataLength) {
+			return Promise.reject("InvalidData");
+		}
 
-				const queueItemId = await this.queueItemEntityFactory.insertQueueItem(requestBody.queuename, queueData);
-				resolve(queueItemId);
-			} catch(e) {
-				reject(e);
-			}
-        });
+		const queueItemId = await this.queueItemEntityFactory.insertQueueItem(requestBody.queuename, queueData);
+		return Promise.resolve(queueItemId);
     }
 };

@@ -1,134 +1,112 @@
+const countCacheExpiry = 250;
+
 export default class {
 	constructor(databaseConnection, queueEntityFactory) {
 		this.databaseConnection = databaseConnection;
 		this.queueEntityFactory = queueEntityFactory;
+		this.countCache = {};
+		this.heldCountCache = {};
 	}
 
-	insertQueueItem(queueName, data) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const queueId = await this.queueEntityFactory.getOrCreateQueueIdByName(queueName);
-				const queueItemId = await this.databaseConnection.executeInsertStoredProcedure("InsertQueueItem", {
-					_QueueID: queueId,
-					_Data: data
-				});
-
-				resolve(queueItemId);
-			} catch (e) {
-				reject(e);
-			}
+	async insertQueueItem(queueName, data) {
+		const queueId = await this.queueEntityFactory.getOrCreateQueueIdByName(queueName);
+		const queueItemId = await this.databaseConnection.executeInsertStoredProcedure("InsertQueueItem", {
+			_QueueID: queueId,
+			_Data: data
 		});
+
+		return Promise.resolve(queueItemId);
 	}
 
-	leaseQueueItem(queueName, expirationInMilliseconds) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
-				if (!queueId) {
-					resolve(null);
-					return;
-				}
+	async leaseQueueItem(queueName, expirationInMilliseconds) {
+		const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
+		if (!queueId) {
+			return Promise.resolve(null);
+		}
 
-				const currentDate = +new Date;
-				const entities = await this.databaseConnection.executeReadStoredProcedure("LeaseQueueItem", {
-					_QueueID: queueId,
-					_LockExpiration: new Date(currentDate + expirationInMilliseconds)
-				});
-
-				resolve(entities[0]);
-			} catch (e) {
-				reject(e);
-			}
+		const currentDate = +new Date;
+		const entities = await this.databaseConnection.executeReadStoredProcedure("LeaseQueueItem", {
+			_QueueID: queueId,
+			_LockExpiration: new Date(currentDate + expirationInMilliseconds)
 		});
+
+		return Promise.resolve(entities[0]);
 	}
 
-	releaseQueueItem(queueItemId, holderId) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ReleaseQueueItem", {
-					_ID: queueItemId,
-					_HolderID: holderId
-				});
-
-				resolve(rowsModified === 1);
-			} catch (e) {
-				reject(e);
-			}
+	async releaseQueueItem(queueItemId, holderId) {
+		const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ReleaseQueueItem", {
+			_ID: queueItemId,
+			_HolderID: holderId
 		});
+
+		return Promise.resolve(rowsModified === 1);
 	}
 
-	deleteQueueItem(queueItemId, holderId) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("DeleteQueueItem", {
-					_ID: queueItemId,
-					_HolderID: holderId
-				});
-
-				resolve(rowsModified === 1);
-			} catch (e) {
-				reject(e);
-			}
+	async deleteQueueItem(queueItemId, holderId) {
+		const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("DeleteQueueItem", {
+			_ID: queueItemId,
+			_HolderID: holderId
 		});
+
+		return Promise.resolve(rowsModified === 1);
 	}
 
-	clearQueue(queueName) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
-				if (!queueId) {
-					resolve(0);
-					return;
-				}
-	
-				const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ClearQueue", {
-					_QueueID: queueId
-				});
-	
-				resolve(rowsModified);
-			} catch (e) {
-				reject(e);
-			}
+	async clearQueue(queueName) {
+		const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
+		if (!queueId) {
+			return Promise.resolve(0);
+		}
+
+		const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ClearQueue", {
+			_QueueID: queueId
 		});
+
+		return Promise.resolve(rowsModified);
 	}
 
-	getQueueSize(queueName) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
-				if (!queueId) {
-					resolve(0);
-					return;
-				}
+	async getQueueSize(queueName) {
+		const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
+		if (!queueId) {
+			return Promise.resolve(0);
+		}
 
-				const count = await this.databaseConnection.executeCountStoredProcedure("GetQueueSize", {
-					_QueueID: queueId
-				});
+		const cachedCount = this.countCache[queueId];
+		if (typeof(cachedCount) === "number") {
+			return Promise.resolve(cachedCount);
+		}
 
-				resolve(count);
-			} catch (e) {
-				reject(e);
-			}
+		const count = await this.databaseConnection.executeCountStoredProcedure("GetQueueSize", {
+			_QueueID: queueId
 		});
+
+		this.countCache[queueId] = count;
+		setTimeout(() => {
+			delete this.countCache[queueId];
+		}, countCacheExpiry);
+
+		return Promise.resolve(count);
 	}
 
-	getHeldQueueSize(queueName) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
-				if (!queueId) {
-					resolve(0);
-					return;
-				}
+	async getHeldQueueSize(queueName) {
+		const queueId = await this.queueEntityFactory.getQueueIdByName(queueName);
+		if (!queueId) {
+			return Promise.resolve(0);
+		}
 
-				const count = await this.databaseConnection.executeCountStoredProcedure("GetHeldQueueSize", {
-					_QueueID: queueId
-				});
+		const cachedCount = this.heldCountCache[queueId];
+		if (typeof(cachedCount) === "number") {
+			return Promise.resolve(cachedCount);
+		}
 
-				resolve(count);
-			} catch (e) {
-				reject(e);
-			}
+		const count = await this.databaseConnection.executeCountStoredProcedure("GetHeldQueueSize", {
+			_QueueID: queueId
 		});
+
+		this.heldCountCache[queueId] = count;
+		setTimeout(() => {
+			delete this.heldCountCache[queueId];
+		}, countCacheExpiry);
+
+		return Promise.resolve(count);
 	}
 };

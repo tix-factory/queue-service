@@ -36,34 +36,27 @@ export default class {
         return httpMethods.post;
     }
  
-    execute(requestBody) {
+    async execute(requestBody) {
 		for (let key in requestBody) {
 			if (requestBody.hasOwnProperty(key)) {
 				requestBody[key.toLowerCase()] = requestBody[key];
 			}
 		}
 
-        return new Promise(async (resolve, reject) => {
-			try {
-				const expirationImMilliseconds = parseTimeSpan(requestBody.leaseexpiry);
-				if (isNaN(expirationImMilliseconds)) {
-					reject("InvalidLeaseExpiry");
-				}
+		const expirationImMilliseconds = parseTimeSpan(requestBody.leaseexpiry);
+		if (isNaN(expirationImMilliseconds)) {
+			return Promise.reject("InvalidLeaseExpiry");
+		}
 
-				const queueItem = await this.queueItemEntityFactory.leaseQueueItem(requestBody.queuename, expirationImMilliseconds);
-				if (!queueItem) {
-					resolve(null);
-					return;
-				}
+		const queueItem = await this.queueItemEntityFactory.leaseQueueItem(requestBody.queuename, expirationImMilliseconds);
+		if (!queueItem) {
+			return Promise.resolve(null);
+		}
 
-				resolve({
-					id: queueItem.ID,
-					data: queueItem.Data,
-					leaseId: queueItem.HolderID
-				});
-			} catch(e) {
-				reject(e);
-			}
-        });
+		return Promise.resolve({
+			id: queueItem.ID,
+			data: queueItem.Data,
+			leaseId: queueItem.HolderID
+		});
     }
 };

@@ -21,20 +21,14 @@ export default class {
         return httpMethods.post;
     }
  
-    execute(requestBody) {
+    async execute(requestBody) {
 		for (let key in requestBody) {
 			if (requestBody.hasOwnProperty(key)) {
 				requestBody[key.toLowerCase()] = requestBody[key];
 			}
 		}
 
-        return new Promise(async (resolve, reject) => {
-			try {
-				const count = await this.queueItemEntityFactory.clearQueue(requestBody.data);
-				resolve(count);
-			} catch(e) {
-				reject(e);
-			}
-        });
+		const count = await this.queueItemEntityFactory.clearQueue(requestBody.data);
+		return Promise.resolve(count);
     }
 };
