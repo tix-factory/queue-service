@@ -71,7 +71,7 @@ export default class {
 		}
 
 		const cachedCount = this.countCache[queueId];
-		if (cachedCount) {
+		if (typeof(cachedCount) === "number") {
 			return Promise.resolve(cachedCount);
 		}
 
@@ -94,7 +94,7 @@ export default class {
 		}
 
 		const cachedCount = this.heldCountCache[queueId];
-		if (cachedCount) {
+		if (typeof(cachedCount) === "number") {
 			return Promise.resolve(cachedCount);
 		}
 
