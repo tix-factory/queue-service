@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { HttpServer } from "@tix-factory/http-service";
 import { ConfiguredConnection } from "@tix-factory/mysql-data";
 import { ConfigurationClient } from "@tix-factory/configuration-client";
-import MongoDB from "mongodb";
+import { MongoConnection } from "@tix-factory/mongodb";
 import QueueEntityFactory from "./entities/queueEntityFactory.js";
 import QueueItemEntityFactory from "./entities/queueItemEntityEntityFactory.js";
 
@@ -22,24 +22,6 @@ const service = new HttpServer({
     logName: "TFQS2.TixFactory.Queue.Service"
 });
 
-const createMongoConnection = (configurationClient, projectName) => {
-	return new Promise(async (resolve, reject) => {
-		try {
-			const mongoConnectionString = await configurationClient.getSettingValue("MongoDBConnectionString");
-			MongoDB.MongoClient.connect(mongoConnectionString, (err, connection) => {
-				if (err) {
-					reject(err);
-				} else {
-					const database = connection.db(projectName);
-					resolve(database);
-				}
-			});
-		} catch (e) {
-			reject(e);
-		}
-	});
-};
-
 const init = () => {
 	console.log(`Starting ${service.options.name}...\n\tWorking directory: ${workingDirectory}\n\tNODE_ENV: ${process.env.NODE_ENV}\n\tPort: ${service.options.port}`);
 
@@ -56,11 +38,13 @@ const init = () => {
 				sslCertificateFileName: `${workingDirectory}/db-certificate.crt`
 			});
 
-			const mongoConnection = await createMongoConnection(configurationClient, "queue-service");
+			const mongoConnectionString = await configurationClient.getSettingValue("MongoDBConnectionString");
+			const mongoConnection = new MongoConnection(mongoConnectionString);
+			const queueItemsCollection = await mongoConnection.getCollection("queue-service", "queue-items");
 
 			const databaseConnection = await configuredConnection.getConnection();
 			const queueEntityFactory = new QueueEntityFactory(databaseConnection);
-			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory, mongoConnection, configurationClient);
+			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory, queueItemsCollection, configurationClient);
 
 			await queueItemEntityFactory.setup();
 			

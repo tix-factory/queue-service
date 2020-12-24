@@ -1,27 +1,13 @@
-import FakeSnowflake from "./fakeSnowflake.js";
 import generateHash from "./generateHash.js";
 
 const countCacheExpiry = 250;
 
-const createIndex = (collection, indexSpecification, options) => {
-	return new Promise((resolve, reject) => {
-		collection.createIndex(indexSpecification, options, (err, result) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(result);
-			}
-		});
-	});
-}
-
 export default class {
-	constructor(databaseConnection, queueEntityFactory, mongoConnection, configurationClient) {
+	constructor(databaseConnection, queueEntityFactory, queueItemsCollection, configurationClient) {
 		this.databaseConnection = databaseConnection;
 		this.queueEntityFactory = queueEntityFactory;
-		this.mongoConnection = mongoConnection;
 		this.configurationClient = configurationClient;
-		this.queueItemsCollection = mongoConnection.collection("queue-items");
+		this.queueItemsCollection = queueItemsCollection;
 		this.countCache = {};
 		this.heldCountCache = {};
 	}
@@ -32,19 +18,13 @@ export default class {
 	}
 
 	async setup() {
-		await createIndex(this.queueItemsCollection, {
-			"id": 1
-		}, {
-			unique: true
-		});
-
-		await createIndex(this.queueItemsCollection, {
+		await this.queueItemsCollection.createIndex({
 			"holderId": 1
 		}, {
 			unique: true
 		});
 
-		await createIndex(this.queueItemsCollection, {
+		await this.queueItemsCollection.createIndex({
 			"queueId": 1,
 			"lockExpiration": 1
 		}, {});
@@ -59,25 +39,13 @@ export default class {
 				return Promise.reject("InvalidData");
 			}
 			
-			return new Promise((resolve, reject) => {
-				const mongoQueueItemId = FakeSnowflake.generate();
-				const holderId = generateHash();
-				const currentTime = new Date();
-				this.queueItemsCollection.insertOne({
-					id: mongoQueueItemId,
-					queueId: queueId,
-					data: data,
-					lockExpiration: currentTime,
-					holderId: holderId,
-					updated: currentTime,
-					created: currentTime
-				}, (err, result) => {
-					if (err) {
-						reject(err);
-					} else {
-						resolve(mongoQueueItemId);
-					}
-				})
+			const holderId = generateHash();
+			const currentTime = new Date();
+			return this.queueItemsCollection.insert({
+				queueId: queueId,
+				data: data,
+				lockExpiration: currentTime,
+				holderId: holderId
 			});
 		}
 
@@ -96,7 +64,6 @@ export default class {
 		}
 
 		const isMongoEnabled = await this.isMongoEnabled();
-
 		if (isMongoEnabled) {
 			return new Promise((resolve, reject) => {
 				const currentTime = new Date();
@@ -105,34 +72,23 @@ export default class {
 					queueId: queueId,
 					lockExpiration: { "$lte": currentTime }
 				}, {
-					"$set": {
-						lockExpiration: new Date(currentTime.getTime() + expirationInMilliseconds),
-						holderId: holderId,
-						updated: currentTime
-					}
-				}, {
-					// https://stackoverflow.com/a/35627439/1663648
-					returnOriginal: false
-				}, (err, result) => {
-					if (err) {
-						reject(err);
+					lockExpiration: new Date(currentTime.getTime() + expirationInMilliseconds),
+					holderId: holderId
+				}).then(entity => {
+					if (entity) {
+						resolve({
+							ID: entity.id,
+							QueueID: entity.queueId,
+							Data: entity.data,
+							HolderID: entity.holderId,
+							LockExpiration: entity.lockExpiration,
+							Updated: entity.updated,
+							Created: entity.created
+						});
 					} else {
-						const entity = result.value;
-						if (entity) {
-							resolve({
-								ID: entity.id,
-								QueueID: entity.queueId,
-								Data: entity.data,
-								HolderID: entity.holderId,
-								LockExpiration: entity.lockExpiration,
-								Updated: entity.updated,
-								Created: entity.created
-							});
-						} else {
-							resolve(null);
-						}
+						resolve(null);
 					}
-				});
+				}).catch(reject);
 			});
 		}
 
@@ -149,26 +105,13 @@ export default class {
 		const isMongoEnabled = await this.isMongoEnabled();
 
 		if (isMongoEnabled) {
-			return new Promise((resolve, reject) => {
-				const currentTime = new Date();
-				this.queueItemsCollection.updateOne({
-					id: queueItemId,
-					holderId: holderId,
-					lockExpiration: { "$gt": currentTime }
-				}, {
-					"$set": {
-						lockExpiration: currentTime,
-						updated: currentTime
-					}
-				}, {
-					writeConcern: "majority"
-				}, (err, result) => {
-					if (err) {
-						reject(err);
-					} else {
-						resolve(result.modifiedCount === 1);
-					}
-				});
+			const currentTime = new Date();
+			return this.queueItemsCollection.updateOne({
+				id: queueItemId,
+				holderId: holderId,
+				lockExpiration: { "$gt": currentTime }
+			}, {
+				lockExpiration: currentTime
 			});
 		}
 
@@ -184,21 +127,11 @@ export default class {
 		const isMongoEnabled = await this.isMongoEnabled();
 
 		if (isMongoEnabled) {
-			return new Promise((resolve, reject) => {
-				const currentTime = new Date();
-				this.queueItemsCollection.deleteOne({
-					id: queueItemId,
-					holderId: holderId,
-					lockExpiration: { "$gt": currentTime }
-				}, {
-					writeConcern: "majority"
-				}, (err, result) => {
-					if (err) {
-						reject(err);
-					} else {
-						resolve(result.deletedCount === 1);
-					}
-				});
+			const currentTime = new Date();
+			return this.queueItemsCollection.deleteOne({
+				id: queueItemId,
+				holderId: holderId,
+				lockExpiration: { "$gt": currentTime }
 			});
 		}
 
@@ -218,18 +151,8 @@ export default class {
 
 		const isMongoEnabled = await this.isMongoEnabled();
 		if (isMongoEnabled) {
-			return new Promise((resolve, reject) => {
-				this.queueItemsCollection.deleteMany({
-					queueId: queueId
-				}, {
-					writeConcern: "majority"
-				}, (err, result) => {
-					if (err) {
-						reject(err);
-					} else {
-						resolve(result.deletedCount);
-					}
-				});
+			return this.queueItemsCollection.deleteMany({
+				queueId: queueId
 			});
 		}
 
@@ -253,16 +176,8 @@ export default class {
 
 		const isMongoEnabled = await this.isMongoEnabled();
 		if (isMongoEnabled) {
-			return new Promise((resolve, reject) => {
-				this.queueItemsCollection.count({
-					queueId: queueId
-				}, (err, result) => {
-					if (err) {
-						reject(err);
-					} else {
-						resolve(result);
-					}
-				});
+			return this.queueItemsCollection.count({
+				queueId: queueId
 			});
 		}
 
@@ -291,18 +206,10 @@ export default class {
 
 		const isMongoEnabled = await this.isMongoEnabled();
 		if (isMongoEnabled) {
-			return new Promise((resolve, reject) => {
-				const currentTime = new Date();
-				this.queueItemsCollection.count({
-					queueId: queueId,
-					lockExpiration: { "$gt": currentTime }
-				}, (err, result) => {
-					if (err) {
-						reject(err);
-					} else {
-						resolve(result);
-					}
-				});
+			const currentTime = new Date();
+			return this.queueItemsCollection.count({
+				queueId: queueId,
+				lockExpiration: { "$gt": currentTime }
 			});
 		}
 
