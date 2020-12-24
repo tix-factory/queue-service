@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { HttpServer } from "@tix-factory/http-service";
 import { ConfiguredConnection } from "@tix-factory/mysql-data";
 import { ConfigurationClient } from "@tix-factory/configuration-client";
+import { MongoConnection } from "@tix-factory/mongodb";
 import QueueEntityFactory from "./entities/queueEntityFactory.js";
 import QueueItemEntityFactory from "./entities/queueItemEntityEntityFactory.js";
 
@@ -37,9 +38,15 @@ const init = () => {
 				sslCertificateFileName: `${workingDirectory}/db-certificate.crt`
 			});
 
+			const mongoConnectionString = await configurationClient.getSettingValue("MongoDBConnectionString");
+			const mongoConnection = new MongoConnection(mongoConnectionString);
+			const queueItemsCollection = await mongoConnection.getCollection("queue-service", "queue-items");
+
 			const databaseConnection = await configuredConnection.getConnection();
 			const queueEntityFactory = new QueueEntityFactory(databaseConnection);
-			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory);
+			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory, queueItemsCollection, configurationClient);
+
+			await queueItemEntityFactory.setup();
 			
 			service.operationRegistry.registerOperation(new AddQueueItemOperation(queueItemEntityFactory));
 			service.operationRegistry.registerOperation(new ClearQueueOperation(queueItemEntityFactory));
