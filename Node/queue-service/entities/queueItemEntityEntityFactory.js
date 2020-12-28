@@ -3,18 +3,11 @@ import generateHash from "./generateHash.js";
 const countCacheExpiry = 250;
 
 export default class {
-	constructor(databaseConnection, queueEntityFactory, queueItemsCollection, configurationClient) {
-		this.databaseConnection = databaseConnection;
+	constructor(queueEntityFactory, queueItemsCollection) {
 		this.queueEntityFactory = queueEntityFactory;
-		this.configurationClient = configurationClient;
 		this.queueItemsCollection = queueItemsCollection;
 		this.countCache = {};
 		this.heldCountCache = {};
-	}
-
-	async isMongoEnabled() {
-		const value = await this.configurationClient.getSettingValue("MongoDBEnabled");
-		return value === "true";
 	}
 
 	async setup() {
@@ -31,30 +24,20 @@ export default class {
 	}
 
 	async insertQueueItem(queueName, data) {
-		const queueId = await this.queueEntityFactory.getOrCreateQueueIdByName(queueName);
-		const isMongoEnabled = await this.isMongoEnabled();
-
-		if (isMongoEnabled) {
-			if (typeof(data) !== "string") {
-				return Promise.reject("InvalidData");
-			}
-			
-			const holderId = generateHash();
-			const currentTime = new Date();
-			return this.queueItemsCollection.insert({
-				queueId: queueId,
-				data: data,
-				lockExpiration: currentTime,
-				holderId: holderId
-			});
+		if (typeof(data) !== "string") {
+			return Promise.reject("InvalidData");
 		}
 
-		const queueItemId = await this.databaseConnection.executeInsertStoredProcedure("InsertQueueItem", {
-			_QueueID: queueId,
-			_Data: data
-		});
+		const queueId = await this.queueEntityFactory.getOrCreateQueueIdByName(queueName);
+		const holderId = generateHash();
+		const currentTime = new Date();
 
-		return Promise.resolve(queueItemId);
+		return this.queueItemsCollection.insert({
+			queueId: queueId,
+			data: data,
+			lockExpiration: currentTime,
+			holderId: holderId
+		});
 	}
 
 	async leaseQueueItem(queueName, expirationInMilliseconds) {
@@ -63,84 +46,65 @@ export default class {
 			return Promise.resolve(null);
 		}
 
-		const isMongoEnabled = await this.isMongoEnabled();
-		if (isMongoEnabled) {
-			return new Promise((resolve, reject) => {
-				const currentTime = new Date();
-				const holderId = generateHash();
-				this.queueItemsCollection.findOneAndUpdate({
-					queueId: queueId,
-					lockExpiration: { "$lte": currentTime }
-				}, {
-					lockExpiration: new Date(currentTime.getTime() + expirationInMilliseconds),
-					holderId: holderId
-				}).then(entity => {
-					if (entity) {
-						resolve({
-							ID: entity.id,
-							QueueID: entity.queueId,
-							Data: entity.data,
-							HolderID: entity.holderId,
-							LockExpiration: entity.lockExpiration,
-							Updated: entity.updated,
-							Created: entity.created
-						});
-					} else {
-						resolve(null);
-					}
-				}).catch(reject);
-			});
-		}
-
-		const currentDate = +new Date;
-		const entities = await this.databaseConnection.executeReadStoredProcedure("LeaseQueueItem", {
-			_QueueID: queueId,
-			_LockExpiration: new Date(currentDate + expirationInMilliseconds)
+		const currentTime = new Date();
+		const holderId = generateHash();
+		const entity = await this.queueItemsCollection.findOneAndUpdate({
+			queueId: queueId,
+			lockExpiration: { "$lte": currentTime }
+		}, {
+			lockExpiration: new Date(currentTime.getTime() + expirationInMilliseconds),
+			holderId: holderId
 		});
 
-		return Promise.resolve(entities[0]);
+		if (entity) {
+			return Promise.resolve({
+				ID: entity.id,
+				QueueID: entity.queueId,
+				Data: entity.data,
+				HolderID: entity.holderId,
+				LockExpiration: entity.lockExpiration,
+				Updated: entity.updated,
+				Created: entity.created
+			});
+		} else {
+			return Promise.resolve(null);
+		}
 	}
 
 	async releaseQueueItem(queueItemId, holderId) {
-		const isMongoEnabled = await this.isMongoEnabled();
-
-		if (isMongoEnabled) {
-			const currentTime = new Date();
-			return this.queueItemsCollection.updateOne({
-				id: queueItemId,
-				holderId: holderId,
-				lockExpiration: { "$gt": currentTime }
-			}, {
-				lockExpiration: currentTime
-			});
+		if (typeof(queueItemId) !== "number") {
+			return Promise.reject("InvalidLeaseHolder");
 		}
 
-		const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ReleaseQueueItem", {
-			_ID: queueItemId,
-			_HolderID: holderId
-		});
+		if (typeof(holderId) !== "string") {
+			return Promise.reject("InvalidLeaseHolder");
+		}
 
-		return Promise.resolve(rowsModified === 1);
+		const currentTime = new Date();
+		return this.queueItemsCollection.updateOne({
+			id: queueItemId,
+			holderId: holderId,
+			lockExpiration: { "$gt": currentTime }
+		}, {
+			lockExpiration: currentTime
+		});
 	}
 
 	async deleteQueueItem(queueItemId, holderId) {
-		const isMongoEnabled = await this.isMongoEnabled();
-
-		if (isMongoEnabled) {
-			const currentTime = new Date();
-			return this.queueItemsCollection.deleteOne({
-				id: queueItemId,
-				holderId: holderId,
-				lockExpiration: { "$gt": currentTime }
-			});
+		if (typeof(queueItemId) !== "number") {
+			return Promise.reject("InvalidLeaseHolder");
 		}
 
-		const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("DeleteQueueItem", {
-			_ID: queueItemId,
-			_HolderID: holderId
-		});
+		if (typeof(holderId) !== "string") {
+			return Promise.reject("InvalidLeaseHolder");
+		}
 
-		return Promise.resolve(rowsModified === 1);
+		const currentTime = new Date();
+		return this.queueItemsCollection.deleteOne({
+			id: queueItemId,
+			holderId: holderId,
+			lockExpiration: { "$gt": currentTime }
+		});
 	}
 
 	async clearQueue(queueName) {
@@ -149,18 +113,9 @@ export default class {
 			return Promise.resolve(0);
 		}
 
-		const isMongoEnabled = await this.isMongoEnabled();
-		if (isMongoEnabled) {
-			return this.queueItemsCollection.deleteMany({
-				queueId: queueId
-			});
-		}
-
-		const rowsModified = await this.databaseConnection.executeWriteStoredProcedure("ClearQueue", {
-			_QueueID: queueId
+		return this.queueItemsCollection.deleteMany({
+			queueId: queueId
 		});
-
-		return Promise.resolve(rowsModified);
 	}
 
 	async getQueueSize(queueName) {
@@ -174,15 +129,8 @@ export default class {
 			return Promise.resolve(cachedCount);
 		}
 
-		const isMongoEnabled = await this.isMongoEnabled();
-		if (isMongoEnabled) {
-			return this.queueItemsCollection.count({
-				queueId: queueId
-			});
-		}
-
-		const count = await this.databaseConnection.executeCountStoredProcedure("GetQueueSize", {
-			_QueueID: queueId
+		const count = await this.queueItemsCollection.count({
+			queueId: queueId
 		});
 
 		this.countCache[queueId] = count;
@@ -204,17 +152,9 @@ export default class {
 			return Promise.resolve(cachedCount);
 		}
 
-		const isMongoEnabled = await this.isMongoEnabled();
-		if (isMongoEnabled) {
-			const currentTime = new Date();
-			return this.queueItemsCollection.count({
-				queueId: queueId,
-				lockExpiration: { "$gt": currentTime }
-			});
-		}
-
-		const count = await this.databaseConnection.executeCountStoredProcedure("GetHeldQueueSize", {
-			_QueueID: queueId
+		const count = await this.queueItemsCollection.count({
+			queueId: queueId,
+			lockExpiration: { "$gt": currentTime }
 		});
 
 		this.heldCountCache[queueId] = count;

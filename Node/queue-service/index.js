@@ -1,7 +1,6 @@
 import { dirname } from "path";
 import { fileURLToPath } from 'url';
 import { HttpServer } from "@tix-factory/http-service";
-import { ConfiguredConnection } from "@tix-factory/mysql-data";
 import { ConfigurationClient } from "@tix-factory/configuration-client";
 import { MongoConnection } from "@tix-factory/mongodb";
 import QueueEntityFactory from "./entities/queueEntityFactory.js";
@@ -27,26 +26,19 @@ const init = () => {
 
 	return new Promise(async (resolve, reject) => {
 		try {
-			const configurationClient = new ConfigurationClient(service.httpClient, service.logger, {
-				maxDatabaseConnections: 25
-			});
-
-			const maxConnections = await configurationClient.getSettingValue("maxDatabaseConnections");
-
-			const configuredConnection = new ConfiguredConnection(configurationClient, service.logger, "QueueConnectionString", {
-				maxConnections: maxConnections,
-				sslCertificateFileName: `${workingDirectory}/db-certificate.crt`
-			});
-
+			const configurationClient = new ConfigurationClient(service.httpClient, service.logger, {});
 			const mongoConnectionString = await configurationClient.getSettingValue("MongoDBConnectionString");
 			const mongoConnection = new MongoConnection(mongoConnectionString);
-			const queueItemsCollection = await mongoConnection.getCollection("queue-service", "queue-items");
+			const queuesCollection = await mongoConnection.getCollection("queue-service", "queues");
+			const queueItemsCollection = await mongoConnection.getCollection("queue-service", "queue-items", { collation: undefined });
 
-			const databaseConnection = await configuredConnection.getConnection();
-			const queueEntityFactory = new QueueEntityFactory(databaseConnection);
-			const queueItemEntityFactory = new QueueItemEntityFactory(databaseConnection, queueEntityFactory, queueItemsCollection, configurationClient);
+			const queueEntityFactory = new QueueEntityFactory(queuesCollection);
+			const queueItemEntityFactory = new QueueItemEntityFactory(queueEntityFactory, queueItemsCollection);
 
-			await queueItemEntityFactory.setup();
+			await Promise.all([
+				queueEntityFactory.setup(),
+				queueItemEntityFactory.setup()
+			]);
 			
 			service.operationRegistry.registerOperation(new AddQueueItemOperation(queueItemEntityFactory));
 			service.operationRegistry.registerOperation(new ClearQueueOperation(queueItemEntityFactory));
