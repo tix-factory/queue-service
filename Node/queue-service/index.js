@@ -29,8 +29,8 @@ const init = () => {
 			const configurationClient = new ConfigurationClient(service.httpClient, service.logger, {});
 			const mongoConnectionString = await configurationClient.getSettingValue("MongoDBConnectionString");
 			const mongoConnection = new MongoConnection(mongoConnectionString);
-			const queuesCollection = await mongoConnection.getCollection("queue-service", "queues");
-			const queueItemsCollection = await mongoConnection.getCollection("queue-service", "queue-items", { collation: undefined });
+			const queuesCollection = await mongoConnection.getCollection("queue-service", "queues-v2");
+			const queueItemsCollection = await mongoConnection.getCollection("queue-service", "queue-items-v2", { collation: undefined });
 
 			const queueEntityFactory = new QueueEntityFactory(queuesCollection);
 			const queueItemEntityFactory = new QueueItemEntityFactory(queueEntityFactory, queueItemsCollection);
