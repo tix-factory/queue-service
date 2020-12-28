@@ -152,6 +152,7 @@ export default class {
 			return Promise.resolve(cachedCount);
 		}
 
+		const currentTime = new Date();
 		const count = await this.queueItemsCollection.count({
 			queueId: queueId,
 			lockExpiration: { "$gt": currentTime }
