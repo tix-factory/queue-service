@@ -14,6 +14,7 @@ export default class {
 	constructor(queuesCollection) {
 		this.queuesCollection = queuesCollection;
 		this.idByNameCache = {};
+		this.deduplicationEnabled = {};
 	}
 
 	async setup() {
@@ -71,5 +72,23 @@ export default class {
 		}
 
 		return Promise.resolve(id);
+	}
+
+	async isQueueDeduplicationEnabled(queueId) {
+		let deduplicationEnabled = this.deduplicationEnabled[queueId];
+		if (typeof(deduplicationEnabled) === "boolean") {
+			return Promise.resolve(deduplicationEnabled);
+		}
+		
+		const queue = await this.queuesCollection.findOne({
+			"id": queueId
+		});
+
+		deduplicationEnabled = this.deduplicationEnabled[queueId] = (queue.isQueueDeduplicationEnabled === true);
+		setTimeout(() => {
+			delete this.deduplicationEnabled[queueId];
+		}, CacheExpiry);
+
+		return Promise.resolve(deduplicationEnabled);
 	}
 };
