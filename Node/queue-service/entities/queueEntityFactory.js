@@ -84,7 +84,7 @@ export default class {
 			"id": queueId
 		});
 
-		deduplicationEnabled = this.deduplicationEnabled[queueId] = queue.isQueueDeduplicationEnabled;
+		deduplicationEnabled = this.deduplicationEnabled[queueId] = (queue.isQueueDeduplicationEnabled === true);
 		setTimeout(() => {
 			delete this.deduplicationEnabled[queueId];
 		}, CacheExpiry);
