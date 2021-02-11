@@ -29,8 +29,20 @@ export default class {
 		}
 
 		const queueId = await this.queueEntityFactory.getOrCreateQueueIdByName(queueName);
+		const deduplicationEnabled = await this.queueEntityFactory.isQueueDeduplicationEnabled(queueId);
 		const holderId = generateHash();
 		const currentTime = new Date();
+
+		if (deduplicationEnabled) {
+			const existingItem = await this.queueItemsCollection.findOne({
+				queueId: queueId,
+				data: data
+			});
+
+			if (existingItem) {
+				return Promise.resolve(existingItem.id);
+			}
+		}
 
 		return this.queueItemsCollection.insert({
 			queueId: queueId,
